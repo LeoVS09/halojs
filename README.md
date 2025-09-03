@@ -2,17 +2,17 @@
 
 > Currently at concept and implementation research phase. Issues and contributions are welcome.
 
-HaloJS is a front-end framework with minimalistic syntax designed to make the right way the easy way. HaloJS combines the best parts of React, Vue, Solid and Qwik to create a framework that does not sacrifice DX experience for the sake of being performant and vice versa.
+HaloJS is a front-end framework with minimalistic syntax designed to make the right way the easy way. HaloJS combines the best parts of React, Vue, Solid and Qwik to create a framework that does not sacrifice developer experience for the sake of being performant and vice versa.
 
 HaloJS was designed as a TypeScript-first framework and JSX superset. It introduces new syntax as minimally as possible, while making code as clean and readable as theoretically possible. It allows new developers and LLMs to write code even without understanding of the framework.
 
-I designed HaloJS as a cry from the heart, while reading about how each day new "most performant" frameworks appear, while finding new ways to make code uglier and harder to read.
+I designed HaloJS as a cry from the heart after reading about how each day new "most performant" frameworks appear, finding new ways to make code uglier and harder to read.
 
 ## Features
 
 - Reactive State Management - Built-in lazy reactivity without any prefixes or syntax.
 - Component-Based Architecture - Clean, reusable components with props and children
-- JSX-like Syntax - Familiar templating with ability to write regular JS inside of markdown.
+- JSX-like Syntax - Familiar templating with the ability to write regular JS inside of markdown.
 - Performance - Best performance based on SolidJS core.
 - TypeScript Support - Full TypeScript integration with type checking even for reactivity.
 - SSR first - First class support with lazy loaded SSR components.
@@ -25,7 +25,7 @@ I designed HaloJS as a cry from the heart, while reading about how each day new 
 
 ## Syntax Example
 
-To define a component, you need to use the `const` keyword with markdown definition as template.
+To define a component, you need to use the `const` keyword with a markdown definition as a template.
 
 ```tsx
 export const App = () => <div>
@@ -34,7 +34,7 @@ export const App = () => <div>
   if(count < 10) {
     <p>Count value is {count}</p> // element will be rendered inside of div
   } else {
-    <p>Congratulation, you reached the goal!</p>
+    <p>Congratulations, you reached the goal!</p>
   }
 
   <button onClick={() => count++}>Increment</button>
@@ -67,7 +67,7 @@ export const App = () => <>
   if(count < maxCount) {
     <p>Count value is {count}</p> // element will be rendered inside of div
   } else {
-    <p>Congratulation, you reached the goal!</p>
+    <p>Congratulations, you reached the goal!</p>
   }
 
   <button onClick={() => count++}>Increment</button>
@@ -101,6 +101,8 @@ const decreaseAge = () => {
 }
 
 export const App = () => <div>
+    // during component render, 
+    // props access recorded as dependencies of component
     <p>User name is {user.name}</p>
     <p>User age is {user.age}</p>
 
@@ -136,7 +138,7 @@ export const App = () => <div>
 </div>
 ```
 
-Easily can be tested
+Can easily be tested
 
 ```tsx
 import { render, screen } from '@testing-library/react';
@@ -164,7 +166,7 @@ test('renders user information correctly', () => {
 
 ### SSR and Lazy Loading
 
-HaloJS components are by default lazy loaded and prerendered on server. Similar to Qwik's lazy loading model, but implemented on top of SolidJS core.
+HaloJS components are by default lazy-loaded and prerendered on the server. Similar to Qwik's lazy loading model, but implemented on top of SolidJS core.
 
 ```tsx
 // App.tsx
@@ -177,7 +179,7 @@ export const App = () => <div>
    let user = { name: 'John', age: 30 };
     
    if(age >= 18) {
-        // this component will be prerendered on server, and then cache pre-populated during HTML rendering
+        // this component will be prerendered on the server, and then the cache is pre-populated during HTML rendering
         <Adult /> 
     } else {
         // this component is never rendered, as a result it is never loaded
@@ -203,7 +205,7 @@ export const Child = () => <>
 </>
 ```
 
-In case the app can show a component after user interaction, browser cache will be prepopulated with the content of the component.
+In case the app can show a component after user interaction, the browser cache will be prepopulated with the content of the component.
 
 ```tsx
 // App.tsx
@@ -216,7 +218,7 @@ export const App = () => <div>
    let user = { name: 'John', age: 30 };
     
    if(age >= 18) {
-        // this component will be prerendered on server, and then cache pre-populated during HTML rendering
+        // this component will be prerendered on the server, and then the cache is pre-populated during HTML rendering
         <Adult /> 
     } else {
         // this component can be rendered, as a result its cache will be pre-populated
@@ -319,9 +321,9 @@ const UserInfoSkeleton = () => UserInfo.mock({
 
 ## Performance
 
-HaloJS is performance-oriented framework. It uses SolidJS core as a most performant library with JSX support.
+HaloJS is a performance-oriented framework. It uses the SolidJS core as the most performant library with JSX support.
 
-![SolidJS benchmark](./solidjs-benchmark.png)
+![SolidJS benchmark](./assets/solid-benchmarks.png)
 
 [View benchmark results](https://krausest.github.io/js-framework-benchmark/current.html)
 
