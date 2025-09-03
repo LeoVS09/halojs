@@ -1,6 +1,6 @@
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/HaloJS header.png">
-    <img src="assets/HaloJS header.png" alt="HaloJS - make the right way the easy way" />
+    <source media="(prefers-color-scheme: dark)" srcset="assets/HaloJS-header.png">
+    <img src="assets/HaloJS-header.png" alt="HaloJS - make the right way the easy way" />
 </picture>
 
 # What is HaloJS?
@@ -11,7 +11,7 @@ HaloJS is a front-end framework with minimalistic syntax designed to make the ri
 
 HaloJS was designed as a TypeScript-first framework and JSX superset. It introduces new syntax as minimally as possible, while making code as clean and readable as theoretically possible. It allows new developers and LLMs to write code even without understanding of the framework.
 
-I designed HaloJS as a cry from the heart after reading about how each day new "most performant" frameworks appear, finding new ways to make code uglier and harder to read.
+I designed HaloJS as a cry from the heart after noticing how each day new "most performant" frameworks appear, finding new ways to make code uglier and harder to read. This is my attempt to create a framework that is performant and developer-friendly in one.
 
 ## Features
 
