@@ -1,3 +1,8 @@
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/HaloJS header.png">
+    <img src="assets/HaloJS header.png" alt="HaloJS - make the right way the easy way" />
+</picture>
+
 # What is HaloJS?
 
 > Currently at concept and implementation research phase. Issues and contributions are welcome.
