@@ -1,2 +1,316 @@
-# halojs
-Simplicity and DX focused front-end framework
+# What is HaloJS?
+
+> Currently at concept and implementation research phase. Issues and contributions are welcome.
+
+HaloJS is front-end framework with minimalistic syntax designed to make the right way the easy way. HaloJS combines the best parts of React, Vue, Solid and Qwik to create a framework that not sacrafice DX experience for the sake of being preformant and vice versa.
+
+HalloJS was designed as TypeScript first framework and JSX supperset. It introduces new syntax as minimal as possble, while making code cleaner and readable as it theoretically possible. It makes for new developers and LLMs possible to write code even without understanding of the framework.
+
+I design HaloJS as cry from the heart, while reading how each day appear new "most performant" framework, which finds new way to make code uglier and harder to read.
+
+## Features
+
+- Reactive State Management - Built-in lazy reactivity without any prefixes or syntax.
+- Component-Based Architecture - Clean, reusable components with props and children
+- JSX-like Syntax - Familiar templating with ability to write regular JS inside of markdown.
+- Performance - Best perfomance based on SolidJS core.
+- TypeScript Support - Full TypeScript integration with type checking even for reactivity.
+- SSR first - First class support with lazy loaded SSR components.
+- Jest/Vitest Support - First class support for testing.
+
+### Planned
+
+- VSCode Integration - Rich editor support with diagnostics, syntax highlighting, and IntelliSense
+- Prettier Support - Full Prettier formatting support for .halojs modules
+
+## Syntax Example
+
+To define component need use `const` keyword with markdown definition as template.
+
+```tsx
+export const App = () => <div>
+  let count = 0; // reactive by default
+
+  if(count < 10) {
+    <p>Count value is {count}</p> // element will be rendered inside of div
+  } else {
+    <p>Congratulation, you reached the goal!</p>
+  }
+
+  <button onClick={() => count++}>Increment</button>
+</div>
+```
+
+### Cycles support
+
+HaloJS support regular for loops and if statements inside of components.
+
+```tsx
+export const App = () => <>
+  for(let i = 0; i < 10; i++) {
+    <p>Item: {i}</p>
+  }
+</>
+```
+
+### Reactive variables
+
+To make it easier to write reactive code, HaloJS makes all variables defined inside of component reactive by default.
+
+```tsx
+let initialCount = 0; // not reactive
+
+export const App = () => <>
+  let count = initialCount; // reactive by default
+  const maxCount = 10 // not reactive
+
+  if(count < maxCount) {
+    <p>Count value is {count}</p> // element will be rendered inside of div
+  } else {
+    <p>Congratulation, you reached the goal!</p>
+  }
+
+  <button onClick={() => count++}>Increment</button>
+</>
+```
+
+### State management
+
+HaloJS allow to define reactive variables outside of components through usage of `store` function.
+
+```tsx
+import { store } from 'halojs';
+
+
+const user = store({
+  name: 'John',
+  age: 30,
+
+  get isAdult() {
+    return this.age >= 18;
+  }
+})
+
+// functions work as actions and reducers while work as pure TS
+const increaseAge = () => {
+  user.name = 'Tom';
+}
+
+const decreaeAge = () => {
+  user.age--;
+}
+
+export const App = () => <div>
+    <p>User name is {user.name}</p>
+    <p>User age is {user.age}</p>
+
+    if (user.isAdult) 
+        <button onClick={decreaeAge}>Make me younger</button>
+    else 
+        <button onClick={increaseAge}>Make me older</button>
+    
+</div>
+```
+
+This approach requires to follow action/reducer pattern for updates, because direct updates will cause exceptions.
+
+```tsx
+
+
+const user = store({
+  name: 'John',
+  age: 30,
+})
+
+// bad code example
+export const App = () => <div>
+    <p>User age is {user.age}</p>
+
+    // cause exception, user is store
+    <button onClick={() => user.age++}>Increment</button>
+
+    let count = user.age;
+
+    // will work, count is in local state
+    <button onClick={() => count++}>Increment</button>
+</div>
+```
+
+Easily can be tested
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { user, App } from './App';
+
+test('renders user information correctly', () => {
+
+  user.age = 31;
+  user.name = 'Tom';
+  render(<App />);
+  
+  expect(screen.getByText('User name is Tom')).toBeInTheDocument();
+  expect(screen.getByText('User age is 31')).toBeInTheDocument();
+
+  user.age = 32;
+  user.name = 'Bob';
+
+  rerender(<App />);
+
+  expect(screen.getByText('User name is Bob')).toBeInTheDocument();
+  expect(screen.getByText('User age is 32')).toBeInTheDocument();
+});
+
+```
+
+### SSR and Lazy Loading
+
+HaloJS compoenents by default lazy loaded and prerendered on server. Simular to Qwik lazy loading model, but implemented on top of SolidJS core.
+
+```tsx
+// App.tsx
+// imported components are lazy loaded on the fly
+import { Adult } from './Adult';
+import { Child } from './Child';
+
+
+export const App = () => <div>
+   let user = { name: 'John', age: 30 };
+    
+   if(age >= 18) {
+        // this component will be prerendered on server, and then cache pre-populated during html rendering
+        <Adult /> 
+    } else {
+        // this component never rendered, as a result it never loaded
+        <Child />
+    }
+
+    <p>User name is {user.name}</p>
+    <p>User age is {user.age}</p>
+</div>
+```
+
+```tsx
+// Adult.tsx
+export const Adult = () => <>
+    <p>User is adult</p>
+</>
+```
+
+```tsx
+// Child.tsx
+export const Child = () => <>
+    <p>User is child</p>
+</>
+```
+
+In case if app can show component after user interaction, browser cache will be prepopulated with content of component.
+
+```tsx
+// App.tsx
+// imported components are lazy loaded on the fly
+import { Adult } from './Adult';
+import { Child } from './Child';
+
+
+export const App = () => <div>
+   let user = { name: 'John', age: 30 };
+    
+   if(age >= 18) {
+        // this component will be prerendered on server, and then cache pre-populated during html rendering
+        <Adult /> 
+    } else {
+        // this component can be rendered, as a result cache of it will be pre-populated
+        <Child />
+    }
+
+    <p>User name is {user.name}</p>
+    <p>User age is {user.age}</p>
+
+    <button onClick={() => user.age++}>Increment</button>
+</div>
+```
+
+### Native async support
+
+HaloJS support native async support, which can be used to fetch data from the server.
+
+```tsx
+// App.tsx
+export const App = async () => <div>
+    let user = await fetch('https://api.example.com/user');
+
+    <p>User name is {user.name}</p>
+    <p>User age is {user.age}</p>
+
+    <button onClick={() => user.age++}>Increment</button>
+    
+    <button onClick={async() => {
+        await fetch('https://api.example.com/user', {
+            method: 'POST',
+            body: JSON.stringify(user)
+        });
+    }}>Save</button>
+</div>
+```
+
+### Native skeleton loading
+
+HaloJS support native skeleton loading, which can be used to show loading state of the component during lazy loading, or data fetching.
+
+```tsx
+import styles from './UserInfo.module.css';
+import loadUser from './loadUser';
+import loadUserPosts from './loadUserPosts';
+
+// UserInfo.tsx
+const UserInfo = async () => <div className={styles.userInfo}>
+    const user = await loadUser();
+
+    <p className={styles.name}>User name is {user.name}</p>
+    <p className={styles.age}>User age is {user.age}</p>
+
+    const userPosts = await loadUserPosts(user.id);
+
+    <h2 className={styles.posts}>User posts:</h2>
+
+    <div className={styles.posts}>
+        for(const post of userPosts) {
+            <h3 className={styles.postTitle}>{post.title}</h3>
+            <p className={styles.postContent}>{post.content}</p>
+        }
+    </div>
+</div>
+
+export default UserInfo;
+```
+
+```tsx
+// UserInfo.skeleton.tsx
+import UserInfo from './UserInfo';
+import SkeletonLine from './SkeletonLine';
+
+// if skeleton file available, halojs will load it and display it during page loading and during data fetching
+export default const UserInfoSkeleton = () => UserInfo.mock({
+    // allow mock imports and functions imported to component
+    './loadUser': () => ({
+        name: <SkeletonLine medium />,
+        age: <SkeletonLine small />
+    })
+    // gradual loading and mocking of data fetching
+    // during user loading, both user and posts will be mocked
+    // after user loaded, his data will be shown, but posts still will be mocked
+    // after posts loaded, they will be shown
+    './loadUserPosts': (userId: string) => ({
+        posts: [
+            {
+                title: <SkeletonLine medium />,
+                content: <>
+                    <SkeletonLine large />
+                    <SkeletonLine large />
+                    <SkeletonLine large />
+                </>
+            }
+        ]
+    })
+})
+```
