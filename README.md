@@ -36,6 +36,8 @@ To define a component, you need to use the `const` keyword with a markdown defin
 export const App = () => <div>
   let count = 0; // reactive by default
 
+  console.log('Count is', count) // run only when coint updates 
+
   if(count < 10) {
     <p>Count value is {count}</p> // element will be rendered inside of div
   } else {
@@ -81,20 +83,27 @@ export const App = () => <>
 
 ### State management
 
-HaloJS allows you to define reactive variables outside of components through usage of the `store` function.
+HaloJS allows you to define reactive variables outside of components through usage of the `Reactive` type.
 
 ```tsx
-import { store } from 'halojs';
+import { store, type Reactive } from 'halojs';
 
-
-const user = store({
+interface UserState {
+  name: string
+  age: number
+  isAdult: boolean
+}
+// Variable converted to reactive at compilation time
+const user: Reactive<UserState> = {
   name: 'John',
   age: 30,
 
+  // getter memoized and uodated only when
+  // variable that they depend is updated
   get isAdult() {
     return this.age >= 18;
   }
-})
+}
 
 // functions work as actions and reducers while work as pure TS
 const increaseAge = () => {
@@ -119,21 +128,21 @@ export const App = () => <div>
 </div>
 ```
 
-This approach requires following the action/reducer pattern for updates, because direct updates will cause exceptions.
+This approach requires following the action/reducer pattern for updates, because direct updates will be marked as exceptions at compilation.
 
 ```tsx
 
 
-const user = store({
+const user: Reactive<UserState> = {
   name: 'John',
   age: 30,
-})
+}
 
 // bad code example
 export const App = () => <div>
     <p>User age is {user.age}</p>
 
-    // causes exception, user is store
+    // causes error, user is Reactive
     <button onClick={() => user.age++}>Increment</button>
 
     let count = user.age;
