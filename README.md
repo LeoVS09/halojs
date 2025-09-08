@@ -36,7 +36,7 @@ To define a component, you need to use the `const` keyword with a markdown defin
 export const App = () => <div>
   let count = 0; // reactive by default
 
-  console.log('Count is', count) // run only when coint updates 
+  console.log('Count is', count) // run only when count updates 
 
   if(count < 10) {
     <p>Count value is {count}</p> // element will be rendered inside of div
