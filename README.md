@@ -105,9 +105,9 @@ const user: Reactive<UserState> = {
   }
 }
 
-// functions work as actions and reducers while work as pure TS
+// functions work as actions and reducers, while being pure TS
 const increaseAge = () => {
-  user.name = 'Tom';
+  user.age++;
 }
 
 const decreaseAge = () => {
@@ -128,7 +128,7 @@ export const App = () => <div>
 </div>
 ```
 
-This approach requires following the action/reducer pattern for updates, because direct updates will be marked as exceptions at compilation.
+This approach allows to use the action/reducer pattern for updates, but direct updates also work.
 
 ```tsx
 
@@ -142,12 +142,12 @@ const user: Reactive<UserState> = {
 export const App = () => <div>
     <p>User age is {user.age}</p>
 
-    // causes error, user is Reactive
+    // work as regular
     <button onClick={() => user.age++}>Increment</button>
 
     let count = user.age;
 
-    // will work, count is in local state
+    // still works, count is in local state
     <button onClick={() => count++}>Increment</button>
 </div>
 ```
@@ -193,7 +193,7 @@ export const App = () => <div>
    let user = { name: 'John', age: 30 };
     
    if(age >= 18) {
-        // this component will be prerendered on the server, and then the cache is pre-populated during HTML rendering
+        // This component will be prerendered on the server, and then the cache is pre-populated during HTML rendering
         <Adult /> 
     } else {
         // this component is never rendered, as a result it is never loaded
@@ -248,12 +248,12 @@ export const App = () => <div>
 
 ### Native async support
 
-HaloJS supports native async support, which can be used to fetch data from the server.
+HaloJS naitivly support async operations. Any component function can be marked as async function, which can be used to fetch data from the server.
 
 ```tsx
 // App.tsx
 export const App = async () => <div>
-    let user = await fetch('https://api.example.com/user');
+    const user = await fetch('https://api.example.com/user');
 
     <p>User name is {user.name}</p>
     <p>User age is {user.age}</p>
@@ -269,23 +269,60 @@ export const App = async () => <div>
 </div>
 ```
 
-### Native skeleton loading
+### Props and Context
 
-HaloJS supports native skeleton loading, which can be used to show the loading state of the component during lazy loading or data fetching.
+Component functions are designed to be pure, so they naturally not have any `effects` or context state injection at run time. But they have context defined as params.
 
 ```tsx
-import styles from './UserInfo.module.css';
-import loadUser from './loadUser';
-import loadUserPosts from './loadUserPosts';
+interface UserInfoProps {
+   currentDate: Date
+}
 
+interface UserInfoContext {
+   user: {
+      name: string
+      dateOfBirth: Date
+   }
+}
+
+export const UserInfo = ({currentDate}: UserInfoProps, {user}: UserInfoContext) => <div>
+    <p>User name is {user.name}</p>
+
+    const age = calcDifference(user.dateOfBirth, currentDate)
+    <p>User age is {age}</p>
+</div>
+```
+
+### Native skeleton loading
+
+Using conext, allow to easily implement skeleton loading
+
+```tsx
 // UserInfo.tsx
-const UserInfo = async () => <div className={styles.userInfo}>
-    const user = await loadUser();
+import styles from './UserInfo.module.css';
+import {UserProfile, UserPosts} from './types.ts
+import SkeletonLine from './SkeletonLine';
+
+interface UserInfoProps {
+   currentDate: Date
+}
+
+interface UserInfoContext {
+   userService: {
+      loadProfile: () => Promise<UserProfile>
+   },
+    postsService: {
+      loadPosts: () => Promise<UserPosts>
+    }
+}
+
+const UserInfo = async (props: UserProps, {userService, postsService}: UserInfoContext) => <div className={styles.userInfo}>
+    const user = await userService.loadProfile();
 
     <p className={styles.name}>User name is {user.name}</p>
     <p className={styles.age}>User age is {user.age}</p>
 
-    const userPosts = await loadUserPosts(user.id);
+    const userPosts = await postsService.loadPosts(user.id);
 
     <h2 className={styles.posts}>User posts:</h2>
 
@@ -298,27 +335,23 @@ const UserInfo = async () => <div className={styles.userInfo}>
 </div>
 
 export default UserInfo;
-```
 
-```tsx
-// UserInfo.loader.tsx
-import UserInfo from './UserInfo';
-import SkeletonLine from './SkeletonLine';
-
-// if loader file is available, 
+// if Loader component available in the component file
 // halojs will load it and display during component loading 
-// and data fetching inside of component
-const UserInfoSkeleton = () => UserInfo.mock({
-    // allows mocking imports and functions imported to component
-    './loadUser': () => ({
+// and data fetching inside of the component
+export const Loader = () => <UserInfo currentDate={new Date()} context={{
+   userService: {
+      loadProfile: () => Promise.resolve({
         name: <SkeletonLine medium />,
         age: <SkeletonLine small />
-    })
-    // gradual loading and mocking of data fetching
-    // during user loading, both user and posts will be mocked
-    // after user loaded, his data will be shown, but posts still will be mocked
-    // after posts loaded, they will be shown
-    './loadUserPosts': (userId: string) => ({
+      })
+   },
+   // gradual loading and mocking of data fetching
+   // during user loading, both user and posts will be mocked
+   // after user profile loaded, his data will be shown, but posts still will be mocked
+   // after posts loaded, they will be shown
+   postsService: {
+      loadPosts: () => Promise.resolve({
         posts: [
             {
                 title: <SkeletonLine medium />,
@@ -329,9 +362,14 @@ const UserInfoSkeleton = () => UserInfo.mock({
                 </>
             }
         ]
-    })
-})
+      })
+   }
+}} />
 ```
+
+## How it works
+
+HaloJS elements are generator functions by default, and all async requests or component rendering inside of it are automatically attached with `yield*`. This allows to make all rendering lazy and intuitive.
 
 ## Performance
 
